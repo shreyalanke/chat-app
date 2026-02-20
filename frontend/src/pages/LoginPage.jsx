@@ -1,18 +1,38 @@
-export default function LoginPage() {
+import { login } from "../API/auth.js";
+import { useState } from "react";
+
+
+
+export default function LoginPage({setUser}) {
+  const [username, setusername] = useState("");
+  const [password, setPassword] = useState("");
+
+  function handleLogin() {
+    login(username, password).then((res) => {
+      if (res.data.status) {
+        localStorage.setItem("userId", username);
+        setUser(username);
+      } else {
+        alert(res.data.message);
+      }
+    });
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 px-4">
       <div className="w-full max-w-md bg-slate-900/70 backdrop-blur rounded-2xl shadow-xl p-8">
         <h1 className="text-3xl font-bold text-white mb-2 text-center">Welcome Back</h1>
         <p className="text-slate-400 text-center mb-8">Sign in to your account</p>
 
-        <form className="space-y-5">
+        <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1">
-              Email
+              username
             </label>
             <input
-              type="email"
+              type="username"
               placeholder="you@example.com"
+              onChange={(e)=>{setusername(e.target.value)}}
               className="w-full rounded-xl bg-slate-800 border border-slate-700 text-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -24,6 +44,7 @@ export default function LoginPage() {
             <input
               type="password"
               placeholder="••••••••"
+              onChange={(e)=>{setPassword(e.target.value)}}
               className="w-full rounded-xl bg-slate-800 border border-slate-700 text-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -39,7 +60,8 @@ export default function LoginPage() {
           </div>
 
           <button
-            type="button"
+            type="submit"
+            onClick={handleLogin}
             className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 transition text-white font-semibold py-3"
           >
             Sign In

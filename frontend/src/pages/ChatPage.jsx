@@ -3,57 +3,50 @@ import Sidebar from "../components/Sidebar";
 import ChatHeader from "../components/ChatHeader";
 import MessageList from "../components/MessageList";
 import MessageInput from "../components/MessageInput";
+import { useEffect } from "react";
+export default function ChatPage({username}) {
+  console.log(username);
 
-export default function ChatPage() {
+  let [socket, setSocket] = useState(null);
+  let [users, setUsers] = useState([]);
+  let [messages, setMessages] = useState([]);
 
-    
+  const [activeChatId, setActiveChatId] = useState(null);
 
-  const [chats, setChats] = useState([
-    {
-      id: "alice",
-      name: "Alice",
-      messages: [
-        { id: 1, sender: "alice", text: "Hey!" },
-        { id: 2, sender: "me", text: "Hi Alice 👋" },
-      ],
-    },
-    {
-      id: "bob",
-      name: "Bob",
-      messages: [{ id: 1, sender: "bob", text: "Yo!" }],
-    },
-  ]);
 
-  const [activeChatId, setActiveChatId] = useState("alice");
-
-  let chat;
-  for (let index = 0; index < chats.length; index++) {
-    const element = chats[index];
-    if (element.id == activeChatId) {
-      chat = element;
-    }
-  }
-  
-  const sendMessage = (text) => {
-    let newChats=[...chats];
-    for (let index = 0; index < newChats.length; index++) {
-      const element = newChats[index];
-        if(element.id==activeChatId){
-           element.messages.push({id:Date.now(), sender:"me", text})
-        }      
+  useEffect(() => {
+    if (socket) return;
+    const ws = new WebSocket("ws://localhost:3000/");
+    ws.onopen = () => {
+      ws.send(JSON.stringify({ type: "join", username }));
     }
 
-    setChats(newChats);
-  };
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if(data && data.type == "initiate"){
+          console.log(data.users);
+          setUsers(data.users);
+        }
+        if (data.type == "chatInit"){
+          console.log(data.messages);
+          setMessages(data.messages);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    socket = ws;
+    setSocket(ws);
+  },[])
 
   return (
     <div className="h-screen w-screen flex bg-gray-100">
-      <Sidebar allChats={chats} setActiveChatId={setActiveChatId} />
+      <Sidebar users={users} setActiveChatId={setActiveChatId} />
 
       <main className="flex-1 flex flex-col">
-        <ChatHeader name={activeChatId} />
-        <MessageList messages={chat.messages} />
-        <MessageInput onSend={sendMessage} />
+        <MessageList socket={socket} activeChatId={activeChatId} username={username} messages={messages} />
+        <MessageInput socket={socket} activeChatId={activeChatId} username={username} />
       </main>
     </div>
   );

@@ -1,12 +1,13 @@
 import { useState } from "react";
 
-export default function MessageInput({ onSend }) {
+export default function MessageInput({ socket,activeChatId, username }) {
   const [text, setText] = useState("");
 
   const handleSend = () => {
     if (!text.trim()) return;
-    onSend(text);
+    socket.send(JSON.stringify({ type: "message", content: text, activeChatId, username }));
     setText("");
+    socket.send(JSON.stringify({ type:"chatInit", activeChatId, username }))
   };
 
   return (

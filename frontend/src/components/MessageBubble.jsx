@@ -1,5 +1,5 @@
-export default function MessageBubble({ message }) {
-  const isMe = message.sender === "me";
+export default function MessageBubble({ message,activeChatId }) {
+  const isMe = message.sender != activeChatId;
 
   return (
     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
@@ -10,7 +10,7 @@ export default function MessageBubble({ message }) {
             : "bg-white text-gray-900"
         }`}
       >
-        {message.text}
+        {message.content}
       </div>
     </div>
   );
